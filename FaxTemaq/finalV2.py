@@ -125,12 +125,12 @@ class HourTrackerApp:
 
     def create_widgets(self):
         # Frame principal
-        main_frame = ttk.Frame(self.root, padding="10")
-        main_frame.grid(row=0, column=0, rowspan=6, columnspan=2, padx=10, pady=10)
+        main_frame = ttk.Frame(self.root, padding="5")
+        main_frame.grid(row=0, column=0, rowspan=6, columnspan=2, padx=10, pady=5)
 
         # Frame para adicionar um novo serviço
-        add_service_frame = ttk.Frame(main_frame, padding="10")
-        add_service_frame.grid(row=0, column=0, padx=10, pady=10)
+        add_service_frame = ttk.Frame(main_frame, padding="5")
+        add_service_frame.grid(row=0, column=0, padx=10, pady=5)
 
         ttk.Label(add_service_frame, text="Novo Serviço:").grid(row=0, column=0, columnspan=2, pady=5)
 
@@ -138,11 +138,11 @@ class HourTrackerApp:
         service_name_entry = ttk.Entry(add_service_frame)
         service_name_entry.grid(row=1, column=1, pady=5)
 
-        ttk.Button(add_service_frame, text="Criar Serviço", command=lambda: self.create_service(service_name_entry.get())).grid(row=2, column=0, columnspan=2, pady=10)
+        ttk.Button(add_service_frame, text="Criar Serviço", command=lambda: self.create_service(service_name_entry.get())).grid(row=2, column=0, columnspan=2, pady=5)
 
         # Frame para lançar horas
-        log_hours_frame = ttk.Frame(main_frame, padding="10")
-        log_hours_frame.grid(row=1, column=0, padx=10, pady=10)
+        log_hours_frame = ttk.Frame(main_frame, padding="5")
+        log_hours_frame.grid(row=1, column=0, padx=10, pady=5)
 
         ttk.Label(log_hours_frame, text="Lançar Horas:").grid(row=0, column=0, columnspan=4, pady=5)
 
@@ -164,11 +164,11 @@ class HourTrackerApp:
 
         ttk.Button(log_hours_frame, text="Registrar Horas", command=lambda: self.log_hours(
             service_combobox.get(), hours_entry.get(), minutes_entry.get(), rate_entry.get())
-        ).grid(row=5, column=0, columnspan=4, pady=10)
+        ).grid(row=5, column=0, columnspan=4, pady=5)
 
         # Frame para excluir um lançamento
-        delete_log_frame = ttk.Frame(main_frame, padding="10")
-        delete_log_frame.grid(row=2, column=0, padx=10, pady=10)
+        delete_log_frame = ttk.Frame(main_frame, padding="5")
+        delete_log_frame.grid(row=2, column=0, padx=10, pady=5)
 
         ttk.Label(delete_log_frame, text="Excluir Lançamento:").grid(row=0, column=0, columnspan=2, pady=5)
 
@@ -176,11 +176,11 @@ class HourTrackerApp:
         log_id_entry = ttk.Entry(delete_log_frame)
         log_id_entry.grid(row=1, column=1, pady=5)
 
-        ttk.Button(delete_log_frame, text="Excluir Lançamento", command=lambda: self.delete_log(log_id_entry.get())).grid(row=2, column=0, columnspan=2, pady=10)
+        ttk.Button(delete_log_frame, text="Excluir Lançamento", command=lambda: self.delete_log(log_id_entry.get())).grid(row=2, column=0, columnspan=2, pady=5)
 
         # Frame para mostrar o resultado final
-        result_frame = ttk.Frame(main_frame, padding="10")
-        result_frame.grid(row=4, column=0, padx=10, pady=10)
+        result_frame = ttk.Frame(main_frame, padding="5")
+        result_frame.grid(row=4, column=0, padx=10, pady=5)
 
         ttk.Label(result_frame, text="Resultado Final:").grid(row=0, column=0, columnspan=2, pady=5)
 
@@ -196,18 +196,18 @@ class HourTrackerApp:
         total_cost_label = ttk.Label(result_frame, text="")
         total_cost_label.grid(row=3, column=1, pady=5)
 
-        ttk.Button(result_frame, text="Atualizar Resultado", command=lambda: self.update_result(result_service_combobox.get(), total_hours_label, total_cost_label)).grid(row=4, column=0, columnspan=2, pady=10)
+        ttk.Button(result_frame, text="Atualizar Resultado", command=lambda: self.update_result(result_service_combobox.get(), total_hours_label, total_cost_label)).grid(row=4, column=0, columnspan=2, pady=5)
 
         # Frame para visualizar todos os lançamentos
-        view_logs_frame = ttk.Frame(main_frame, padding="10")
-        view_logs_frame.grid(row=1, column=1, padx=10, pady=10)
+        view_logs_frame = ttk.Frame(main_frame, padding="5")
+        view_logs_frame.grid(row=1, column=1, padx=10, pady=5)
 
         ttk.Label(view_logs_frame, text="Visualizar Lançamentos:").grid(row=0, column=0, columnspan=2, pady=5)
 
         logs_listbox = tk.Listbox(view_logs_frame, selectmode=tk.SINGLE, width=50)
         logs_listbox.grid(row=1, column=0, columnspan=2, pady=5)
 
-        ttk.Button(view_logs_frame, text="Atualizar Lançamentos", command=lambda: self.update_logs_list(logs_listbox)).grid(row=2, column=0, columnspan=2, pady=10)
+        ttk.Button(view_logs_frame, text="Atualizar Lançamentos", command=lambda: self.update_logs_list(logs_listbox)).grid(row=2, column=0, columnspan=2, pady=5)
 
     def create_service(self, service_name):
         rate = 0
