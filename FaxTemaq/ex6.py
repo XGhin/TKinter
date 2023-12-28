@@ -28,7 +28,6 @@ class ServiceManager:
                     service_id INTEGER,
                     date TEXT NOT NULL,
                     hours REAL NOT NULL,
-                    minutes REAL NOT NULL,
                     rate REAL NOT NULL,
                     total_cost REAL NOT NULL,
                     FOREIGN KEY (service_id) REFERENCES services (id)
@@ -67,16 +66,14 @@ class ServiceManager:
             if result:
                 service_id, service_rate = result
                 try:
-                    hours = float(hours)
-                    minutes = float(minutes)
+                    hours = float(hours) + float(minutes) / 60
                     rate = float(rate)
-                    total_hours = hours + minutes / 60
-                    total_cost = total_hours * rate
-                    cursor.execute("INSERT INTO logs (service_id, date, hours, minutes, rate, total_cost) VALUES (?, ?, ?, ?, ?, ?)",
-                                   (service_id, datetime.now(), hours, minutes, rate, total_cost))
-                    print(f"Horas registradas para o serviço {service_name}: {total_hours:.2f}h, Custo total: R${total_cost:.2f}")
+                    total_cost = hours * rate
+                    cursor.execute("INSERT INTO logs (service_id, date, hours, rate, total_cost) VALUES (?, ?, ?, ?, ?)",
+                                   (service_id, datetime.now(), hours, rate, total_cost))
+                    print(f"Horas registradas para o serviço {service_name}: {hours:.2f}h, Custo total: R${total_cost:.2f}")
                 except ValueError:
-                    print("Por favor, insira valores válidos para horas, minutos e custo por hora.")
+                    print("Por favor, insira valores válidos para horas e custo por hora.")
             else:
                 print("Este serviço não existe.")
 
@@ -89,7 +86,7 @@ class ServiceManager:
             result = cursor.fetchone()
             if result:
                 service_id = result[0]
-                cursor.execute("SELECT SUM(hours) + SUM(minutes / 60), SUM(total_cost) FROM logs WHERE service_id=?", (service_id,))
+                cursor.execute("SELECT SUM(hours), SUM(total_cost) FROM logs WHERE service_id=?", (service_id,))
                 result = cursor.fetchone()
                 total_hours, total_cost = result if result else (0, 0)
                 return total_hours, total_cost
@@ -119,18 +116,18 @@ class HourTrackerApp:
         self.root.title("Hour Tracker")
         self.service_manager = service_manager
 
-        self.style = Style(theme="yeti")  # Escolha o tema desejado
+        self.style = Style(theme="darkly")  # Escolha o tema desejado
 
         self.create_widgets()
 
     def create_widgets(self):
         # Frame principal
-        main_frame = ttk.Frame(self.root, padding="5")
-        main_frame.grid(row=0, column=0, rowspan=6, columnspan=2, padx=10, pady=5)
+        main_frame = ttk.Frame(self.root, padding="10")
+        main_frame.grid(row=0, column=0, rowspan=6, columnspan=2, padx=10, pady=10)
 
         # Frame para adicionar um novo serviço
-        add_service_frame = ttk.Frame(main_frame, padding="5")
-        add_service_frame.grid(row=0, column=0, padx=10, pady=5)
+        add_service_frame = ttk.Frame(main_frame, padding="10")
+        add_service_frame.grid(row=0, column=0, padx=10, pady=10)
 
         ttk.Label(add_service_frame, text="Novo Serviço:").grid(row=0, column=0, columnspan=2, pady=5)
 
@@ -138,37 +135,35 @@ class HourTrackerApp:
         service_name_entry = ttk.Entry(add_service_frame)
         service_name_entry.grid(row=1, column=1, pady=5)
 
-        ttk.Button(add_service_frame, text="Criar Serviço", command=lambda: self.create_service(service_name_entry.get())).grid(row=2, column=0, columnspan=2, pady=5)
+        ttk.Button(add_service_frame, text="Criar Serviço", command=lambda: self.create_service(service_name_entry.get())).grid(row=2, column=0, columnspan=2, pady=10)
 
         # Frame para lançar horas
-        log_hours_frame = ttk.Frame(main_frame, padding="5")
-        log_hours_frame.grid(row=1, column=0, padx=10, pady=5)
+        log_hours_frame = ttk.Frame(main_frame, padding="10")
+        log_hours_frame.grid(row=1, column=0, padx=10, pady=10)
 
-        ttk.Label(log_hours_frame, text="Lançar Horas:").grid(row=0, column=0, columnspan=4, pady=5)
+        ttk.Label(log_hours_frame, text="Lançar Horas:").grid(row=0, column=0, columnspan=2, pady=5)
 
         ttk.Label(log_hours_frame, text="Serviço:").grid(row=1, column=0, pady=5)
         service_combobox = ttk.Combobox(log_hours_frame, values=self.service_manager.services)
-        service_combobox.grid(row=1, column=1, pady=5, padx=(0, 5))
+        service_combobox.grid(row=1, column=1, pady=5)
 
-        ttk.Label(log_hours_frame, text="Horas Trabalhadas:").grid(row=2, column=0, pady=5, sticky='e')
+        ttk.Label(log_hours_frame, text="Horas Trabalhadas:").grid(row=2, column=0, pady=5)
         hours_entry = ttk.Entry(log_hours_frame)
-        hours_entry.grid(row=2, column=1, pady=5, padx=(0, 5))
+        hours_entry.grid(row=2, column=1, pady=5)
 
-        ttk.Label(log_hours_frame, text="Minutos Trabalhados:").grid(row=3, column=0, pady=5, sticky='e')
+        ttk.Label(log_hours_frame, text="Minutos Trabalhados:").grid(row=3, column=0, pady=5)
         minutes_entry = ttk.Entry(log_hours_frame)
-        minutes_entry.grid(row=3, column=1, pady=5, padx=(0, 5))
+        minutes_entry.grid(row=3, column=1, pady=5)
 
-        ttk.Label(log_hours_frame, text="Custo por Hora:").grid(row=4, column=0, pady=5, sticky='e')
+        ttk.Label(log_hours_frame, text="Custo por Hora:").grid(row=4, column=0, pady=5)
         rate_entry = ttk.Entry(log_hours_frame)
-        rate_entry.grid(row=4, column=1, pady=5, padx=(0, 5))
+        rate_entry.grid(row=4, column=1, pady=5)
 
-        ttk.Button(log_hours_frame, text="Registrar Horas", command=lambda: self.log_hours(
-            service_combobox.get(), hours_entry.get(), minutes_entry.get(), rate_entry.get())
-        ).grid(row=5, column=0, columnspan=4, pady=5)
+        ttk.Button(log_hours_frame, text="Registrar Horas", command=lambda: self.log_hours(service_combobox.get(), hours_entry.get(), minutes_entry.get(), rate_entry.get())).grid(row=5, column=0, columnspan=2, pady=5)
 
         # Frame para excluir um lançamento
-        delete_log_frame = ttk.Frame(main_frame, padding="5")
-        delete_log_frame.grid(row=2, column=0, padx=10, pady=5)
+        delete_log_frame = ttk.Frame(main_frame, padding="10")
+        delete_log_frame.grid(row=2, column=0, padx=10, pady=10)
 
         ttk.Label(delete_log_frame, text="Excluir Lançamento:").grid(row=0, column=0, columnspan=2, pady=5)
 
@@ -176,11 +171,11 @@ class HourTrackerApp:
         log_id_entry = ttk.Entry(delete_log_frame)
         log_id_entry.grid(row=1, column=1, pady=5)
 
-        ttk.Button(delete_log_frame, text="Excluir Lançamento", command=lambda: self.delete_log(log_id_entry.get())).grid(row=2, column=0, columnspan=2, pady=5)
+        ttk.Button(delete_log_frame, text="Excluir Lançamento", command=lambda: self.delete_log(log_id_entry.get())).grid(row=2, column=0, columnspan=2, pady=10)
 
         # Frame para mostrar o resultado final
-        result_frame = ttk.Frame(main_frame, padding="5")
-        result_frame.grid(row=4, column=0, padx=10, pady=5)
+        result_frame = ttk.Frame(main_frame, padding="10")
+        result_frame.grid(row=4, column=0, padx=10, pady=10)
 
         ttk.Label(result_frame, text="Resultado Final:").grid(row=0, column=0, columnspan=2, pady=5)
 
@@ -196,18 +191,18 @@ class HourTrackerApp:
         total_cost_label = ttk.Label(result_frame, text="")
         total_cost_label.grid(row=3, column=1, pady=5)
 
-        ttk.Button(result_frame, text="Atualizar Resultado", command=lambda: self.update_result(result_service_combobox.get(), total_hours_label, total_cost_label)).grid(row=4, column=0, columnspan=2, pady=5)
+        ttk.Button(result_frame, text="Atualizar Resultado", command=lambda: self.update_result(result_service_combobox.get(), total_hours_label, total_cost_label)).grid(row=4, column=0, columnspan=2, pady=10)
 
         # Frame para visualizar todos os lançamentos
-        view_logs_frame = ttk.Frame(main_frame, padding="5")
-        view_logs_frame.grid(row=1, column=1, padx=10, pady=5)
+        view_logs_frame = ttk.Frame(main_frame, padding="10")
+        view_logs_frame.grid(row=1, column=1, padx=10, pady=10)
 
         ttk.Label(view_logs_frame, text="Visualizar Lançamentos:").grid(row=0, column=0, columnspan=2, pady=5)
 
         logs_listbox = tk.Listbox(view_logs_frame, selectmode=tk.SINGLE, width=50)
         logs_listbox.grid(row=1, column=0, columnspan=2, pady=5)
 
-        ttk.Button(view_logs_frame, text="Atualizar Lançamentos", command=lambda: self.update_logs_list(logs_listbox)).grid(row=2, column=0, columnspan=2, pady=5)
+        ttk.Button(view_logs_frame, text="Atualizar Lançamentos", command=lambda: self.update_logs_list(logs_listbox)).grid(row=2, column=0, columnspan=2, pady=10)
 
     def create_service(self, service_name):
         rate = 0
@@ -219,29 +214,42 @@ class HourTrackerApp:
         self.update_logs_list(logs_listbox)
 
     def delete_log(self, log_id):
-        self.service_manager.delete_log(log_id)
-        # Adiciona esta linha para atualizar a lista de lançamentos imediatamente após a exclusão
-        self.update_logs_list(logs_listbox)
-
-    def update_result(self, service_name, total_hours_label, total_cost_label):
-        total_hours, total_cost = self.service_manager.get_service_info(service_name)
-        formatted_hours = int(total_hours)
-        formatted_minutes = (total_hours - formatted_hours) * 60
-        total_hours_label.config(text=f"{formatted_hours:02d}:{int(formatted_minutes):02d}h")
-        total_cost_label.config(text=f"R${total_cost:.2f}")
-
+        try:
+            log_id = int(log_id)
+            self.service_manager.delete_log(log_id)
+            print(f"Lançamento excluído com sucesso: ID {log_id}")
+            # Adiciona esta linha para atualizar a lista de lançamentos imediatamente após a exclusão
+            self.update_logs_list(logs_listbox)
+        except ValueError:
+            print("Por favor, insira um ID de lançamento válido.")
 
     def update_logs_list(self, logs_listbox):
-        logs = self.service_manager.get_all_logs()
         logs_listbox.delete(0, tk.END)
+        logs = self.service_manager.get_all_logs()
         for log in logs:
-            log_entry = f"ID: {log[0]}, Serviço: {log[1]}, Custo: R${log[2]:.2f}, Data: {log[3]}"
-            logs_listbox.insert(tk.END, log_entry)
+            log_id, log_service, log_cost, log_date = log
+            logs_listbox.insert(tk.END, f"ID: {log_id}, Serviço: {log_service}, Custo: R${log_cost:.2f}, Data e Hora: {log_date}")
 
-if __name__ == "__main__":
-    root = tk.Tk()
-    service_manager = ServiceManager()
-    app = HourTrackerApp(root, service_manager)
-    root.mainloop()
+    def update_result(self, service_name, total_hours_label, total_cost_label):
+        result = self.service_manager.get_service_info(service_name.upper().strip())
+        if result is not None:
+            total_hours, total_cost = result
+            # Formata as horas e minutos separadamente
+            formatted_hours = int(total_hours)
+            formatted_minutes = int((total_hours - formatted_hours) * 60)
+            total_hours_label.config(text=f"{formatted_hours:02d}:{formatted_minutes:02d}")
+            total_cost_label.config(text=f"R${total_cost:.2f}")
+        else:
+            total_hours_label.config(text="Este serviço não existe.")
+            total_cost_label.config(text="")
 
+    def update_last_service_result(self, total_hours_label, total_cost_label):
+        # Obtém o último serviço registrado automaticamente
+        last_service = self.service_manager.services[-1]
+        self.update_result(last_service, total_hours_label, total_cost_label)
 
+# Inicializa o serviço manager e o aplicativo
+service_manager = ServiceManager()
+root = tk.Tk()
+app = HourTrackerApp(root, service_manager)
+root.mainloop()

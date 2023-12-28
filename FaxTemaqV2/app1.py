@@ -119,7 +119,7 @@ class HourTrackerApp:
         self.root.title("Hour Tracker")
         self.service_manager = service_manager
 
-        self.style = Style(theme="yeti")  # Escolha o tema desejado
+        self.style = Style(theme="superhero")  # Escolha o tema desejado
 
         self.create_widgets()
 
@@ -214,8 +214,19 @@ class HourTrackerApp:
         self.service_manager.create_service(service_name.upper().strip(), rate)
 
     def log_hours(self, service_name, hours, minutes, rate):
-        self.service_manager.log_hours(service_name.upper().strip(), hours.strip(), minutes.strip(), rate.strip())
-        # Adiciona esta linha para atualizar a lista de lançamentos imediatamente após o registro
+        # Validação dos dados de entrada
+        try:
+            hours = float(hours)
+            minutes = float(minutes)
+            rate = float(rate)
+            if hours < 0 or minutes < 0 or minutes >= 60 or rate < 0:
+                raise ValueError("Valores inválidos para horas, minutos ou taxa.")
+        except ValueError as e:
+            print(f"Erro de entrada: {e}")
+            return  # Impede a execução do restante do método
+
+        self.service_manager.log_hours(service_name.upper().strip(), hours, minutes, rate)
+        # Atualiza a lista de lançamentos após o registro
         self.update_logs_list(logs_listbox)
 
     def delete_log(self, log_id):
@@ -243,5 +254,3 @@ if __name__ == "__main__":
     service_manager = ServiceManager()
     app = HourTrackerApp(root, service_manager)
     root.mainloop()
-
-

@@ -121,16 +121,19 @@ class HourTrackerApp:
 
         self.style = Style(theme="yeti")  # Escolha o tema desejado
 
+        # Inicializa o atributo logs_listbox como None
+        self.logs_listbox = None
+
         self.create_widgets()
 
     def create_widgets(self):
         # Frame principal
         main_frame = ttk.Frame(self.root, padding="5")
-        main_frame.grid(row=0, column=0, rowspan=6, columnspan=2, padx=10, pady=5)
+        main_frame.grid(row=0, column=0, rowspan=6, columnspan=2, padx=10, pady=5, sticky='nsew')
 
         # Frame para adicionar um novo serviço
         add_service_frame = ttk.Frame(main_frame, padding="5")
-        add_service_frame.grid(row=0, column=0, padx=10, pady=5)
+        add_service_frame.grid(row=0, column=0, padx=10, pady=5, sticky='nsew')
 
         ttk.Label(add_service_frame, text="Novo Serviço:").grid(row=0, column=0, columnspan=2, pady=5)
 
@@ -142,7 +145,7 @@ class HourTrackerApp:
 
         # Frame para lançar horas
         log_hours_frame = ttk.Frame(main_frame, padding="5")
-        log_hours_frame.grid(row=1, column=0, padx=10, pady=5)
+        log_hours_frame.grid(row=1, column=0, padx=10, pady=5, sticky='nsew')
 
         ttk.Label(log_hours_frame, text="Lançar Horas:").grid(row=0, column=0, columnspan=4, pady=5)
 
@@ -165,10 +168,9 @@ class HourTrackerApp:
         ttk.Button(log_hours_frame, text="Registrar Horas", command=lambda: self.log_hours(
             service_combobox.get(), hours_entry.get(), minutes_entry.get(), rate_entry.get())
         ).grid(row=5, column=0, columnspan=4, pady=5)
-
         # Frame para excluir um lançamento
         delete_log_frame = ttk.Frame(main_frame, padding="5")
-        delete_log_frame.grid(row=2, column=0, padx=10, pady=5)
+        delete_log_frame.grid(row=2, column=0, padx=10, pady=5, sticky='nsew')
 
         ttk.Label(delete_log_frame, text="Excluir Lançamento:").grid(row=0, column=0, columnspan=2, pady=5)
 
@@ -180,7 +182,7 @@ class HourTrackerApp:
 
         # Frame para mostrar o resultado final
         result_frame = ttk.Frame(main_frame, padding="5")
-        result_frame.grid(row=4, column=0, padx=10, pady=5)
+        result_frame.grid(row=3, column=0, padx=10, pady=5, sticky='nsew')
 
         ttk.Label(result_frame, text="Resultado Final:").grid(row=0, column=0, columnspan=2, pady=5)
 
@@ -200,28 +202,54 @@ class HourTrackerApp:
 
         # Frame para visualizar todos os lançamentos
         view_logs_frame = ttk.Frame(main_frame, padding="5")
-        view_logs_frame.grid(row=1, column=1, padx=10, pady=5)
+        view_logs_frame.grid(row=4, column=0, padx=10, pady=5, sticky='nsew')
 
         ttk.Label(view_logs_frame, text="Visualizar Lançamentos:").grid(row=0, column=0, columnspan=2, pady=5)
 
-        logs_listbox = tk.Listbox(view_logs_frame, selectmode=tk.SINGLE, width=50)
-        logs_listbox.grid(row=1, column=0, columnspan=2, pady=5)
+        # Aqui definimos logs_listbox como um atributo da classe
+        self.logs_listbox = tk.Listbox(view_logs_frame, selectmode=tk.SINGLE, width=50)
+        self.logs_listbox.grid(row=1, column=0, columnspan=2, pady=5)
 
-        ttk.Button(view_logs_frame, text="Atualizar Lançamentos", command=lambda: self.update_logs_list(logs_listbox)).grid(row=2, column=0, columnspan=2, pady=5)
+        ttk.Button(view_logs_frame, text="Atualizar Lançamentos", command=lambda: self.update_logs_list(self.logs_listbox)).grid(row=2, column=0, columnspan=2, pady=5)
+
+        # Frame para pesquisar lançamentos por serviço
+        search_logs_frame = ttk.Frame(main_frame, padding="5")
+        search_logs_frame.grid(row=5, column=0, padx=10, pady=5, sticky='nsew')
+
+        ttk.Label(search_logs_frame, text="Pesquisar Lançamentos por Serviço:").grid(row=0, column=0, columnspan=2, pady=5)
+
+        ttk.Label(search_logs_frame, text="Serviço:").grid(row=1, column=0, pady=5)
+        search_service_combobox = ttk.Combobox(search_logs_frame, values=self.service_manager.services)
+        search_service_combobox.grid(row=1, column=1, pady=5)
+
+        ttk.Button(search_logs_frame, text="Pesquisar", command=lambda: self.search_logs(search_service_combobox.get(), self.logs_listbox)).grid(row=2, column=0, columnspan=2, pady=5)
+
+        # Configurar o grid para expandir as células
+        for i in range(6):
+            main_frame.rowconfigure(i, weight=1)
+        main_frame.columnconfigure(0, weight=1)
+
+    def search_logs(self, service_name):
+        logs = self.service_manager.get_all_logs()
+        filtered_logs = [log for log in logs if log[1] == service_name]
+        self.search_logs_listbox.delete(0, tk.END)
+        for log in filtered_logs:
+            log_entry = f"ID: {log[0]}, Serviço: {log[1]}, Custo: R${log[2]:.2f}, Data: {log[3]}"
+            self.search_logs_listbox.insert(tk.END, log_entry)
 
     def create_service(self, service_name):
         rate = 0
         self.service_manager.create_service(service_name.upper().strip(), rate)
 
     def log_hours(self, service_name, hours, minutes, rate):
-        self.service_manager.log_hours(service_name.upper().strip(), hours.strip(), minutes.strip(), rate.strip())
-        # Adiciona esta linha para atualizar a lista de lançamentos imediatamente após o registro
-        self.update_logs_list(logs_listbox)
+        self.service_manager.log_hours(service_name, hours, minutes, rate)
+        # Atualiza a lista de lançamentos usando o atributo da classe
+        self.update_logs_list(self.logs_listbox)
 
     def delete_log(self, log_id):
         self.service_manager.delete_log(log_id)
-        # Adiciona esta linha para atualizar a lista de lançamentos imediatamente após a exclusão
-        self.update_logs_list(logs_listbox)
+        # Atualiza a lista de lançamentos usando o atributo da classe
+        self.update_logs_list(self.logs_listbox)
 
     def update_result(self, service_name, total_hours_label, total_cost_label):
         total_hours, total_cost = self.service_manager.get_service_info(service_name)
@@ -230,7 +258,6 @@ class HourTrackerApp:
         total_hours_label.config(text=f"{formatted_hours:02d}:{int(formatted_minutes):02d}h")
         total_cost_label.config(text=f"R${total_cost:.2f}")
 
-
     def update_logs_list(self, logs_listbox):
         logs = self.service_manager.get_all_logs()
         logs_listbox.delete(0, tk.END)
@@ -238,10 +265,9 @@ class HourTrackerApp:
             log_entry = f"ID: {log[0]}, Serviço: {log[1]}, Custo: R${log[2]:.2f}, Data: {log[3]}"
             logs_listbox.insert(tk.END, log_entry)
 
+
 if __name__ == "__main__":
     root = tk.Tk()
     service_manager = ServiceManager()
     app = HourTrackerApp(root, service_manager)
     root.mainloop()
-
-

@@ -38,7 +38,7 @@ linha3.pack()
 
 # linha 4
 linha4 = ttk.Frame(master=window)
-calcular = ttk.Button(master=linha4, text="Calcular Salario", command=Salario)
+calcular = ttk.Button(master=linha4, text="Cmalcular Salario", command=Salario)
 calcular.pack()
 linha4.pack(pady=10)
 

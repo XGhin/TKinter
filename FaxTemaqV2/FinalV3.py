@@ -121,6 +121,9 @@ class HourTrackerApp:
 
         self.style = Style(theme="yeti")  # Escolha o tema desejado
 
+        # Inicializa o atributo logs_listbox como None
+        self.logs_listbox = None
+
         self.create_widgets()
 
     def create_widgets(self):
@@ -204,24 +207,25 @@ class HourTrackerApp:
 
         ttk.Label(view_logs_frame, text="Visualizar Lançamentos:").grid(row=0, column=0, columnspan=2, pady=5)
 
-        logs_listbox = tk.Listbox(view_logs_frame, selectmode=tk.SINGLE, width=50)
-        logs_listbox.grid(row=1, column=0, columnspan=2, pady=5)
+        # Aqui definimos logs_listbox como um atributo da classe
+        self.logs_listbox = tk.Listbox(view_logs_frame, selectmode=tk.SINGLE, width=50)
+        self.logs_listbox.grid(row=1, column=0, columnspan=2, pady=5)
 
-        ttk.Button(view_logs_frame, text="Atualizar Lançamentos", command=lambda: self.update_logs_list(logs_listbox)).grid(row=2, column=0, columnspan=2, pady=5)
+        ttk.Button(view_logs_frame, text="Atualizar Lançamentos", command=lambda: self.update_logs_list(self.logs_listbox)).grid(row=2, column=0, columnspan=2, pady=5)
 
     def create_service(self, service_name):
         rate = 0
         self.service_manager.create_service(service_name.upper().strip(), rate)
 
     def log_hours(self, service_name, hours, minutes, rate):
-        self.service_manager.log_hours(service_name.upper().strip(), hours.strip(), minutes.strip(), rate.strip())
-        # Adiciona esta linha para atualizar a lista de lançamentos imediatamente após o registro
-        self.update_logs_list(logs_listbox)
+        self.service_manager.log_hours(service_name, hours, minutes, rate)
+        # Atualiza a lista de lançamentos usando o atributo da classe
+        self.update_logs_list(self.logs_listbox)
 
     def delete_log(self, log_id):
         self.service_manager.delete_log(log_id)
-        # Adiciona esta linha para atualizar a lista de lançamentos imediatamente após a exclusão
-        self.update_logs_list(logs_listbox)
+        # Atualiza a lista de lançamentos usando o atributo da classe
+        self.update_logs_list(self.logs_listbox)
 
     def update_result(self, service_name, total_hours_label, total_cost_label):
         total_hours, total_cost = self.service_manager.get_service_info(service_name)
@@ -229,7 +233,6 @@ class HourTrackerApp:
         formatted_minutes = (total_hours - formatted_hours) * 60
         total_hours_label.config(text=f"{formatted_hours:02d}:{int(formatted_minutes):02d}h")
         total_cost_label.config(text=f"R${total_cost:.2f}")
-
 
     def update_logs_list(self, logs_listbox):
         logs = self.service_manager.get_all_logs()
@@ -243,5 +246,3 @@ if __name__ == "__main__":
     service_manager = ServiceManager()
     app = HourTrackerApp(root, service_manager)
     root.mainloop()
-
-
