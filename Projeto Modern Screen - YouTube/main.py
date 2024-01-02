@@ -1,6 +1,5 @@
 import tkinter
 import customtkinter as ctk
-import ttkbo
 
 #defs 
 def download_func():
