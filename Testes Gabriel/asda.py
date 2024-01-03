@@ -1,70 +1,58 @@
 import tkinter as tk
 import ttkbootstrap as ttk
 
-# Window
 window = tk.Tk()
 window.title('Salario_TK_V2')
+style = ttk.Style(theme='yeti')
 
-# Global variables
 horas_var = tk.IntVar()
 minutos_var = tk.IntVar()
 valor_var = tk.IntVar()
+salario_var = tk.IntVar()
 
-# Widgets em Def
-def Label_Horas():
-    horas_label = ttk.Label(linha1, text='Horas')
-    horas_label.pack(side='left', padx= 5, pady= 5)
+class Widgets():
 
-def Label_Minutos():
-    minutos_label = ttk.Label(linha1, text='Minutos')
-    minutos_label.pack(side='left', padx= 5, pady= 5)
+    def Entry_Horas(self):
+        horas = ttk.Entry(linha1, width=10, justify='center', textvariable=horas_var)
+        horas.selection_clear()
+        horas.focus()
+        horas.pack(side='left', padx= 5, pady= 5)
 
-def Entry_Horas():
-    horas = ttk.Entry(linha1, width=10, justify='center', textvariable=horas_var)
-    horas.pack(side='left', padx= 5, pady= 5)
-    return horas_var
+    def Entry_Minutos(self):
+        minutos = ttk.Entry(linha1, width=10, justify='center', textvariable=minutos_var)
+        minutos.pack(side='left', padx= 5, pady= 5)
 
-def Entry_Minutos():
-    minutos = ttk.Entry(linha1, width=10, justify='center', textvariable=minutos_var)
-    minutos.pack(side='left', padx= 5, pady= 5)
-    return minutos_var
+    def Entry_Valor(self):
+        valor = ttk.Entry(linha2, width=10, justify='center', textvariable=valor_var)
+        valor.pack(padx= 5, pady= 5)
 
-def Label_Valor():
-    valor_label = ttk.Label(linha2, text='Valor')
-    valor_label.pack(padx= 5, pady= 5)
+    def Button_Calcular(self):
+        calcular = ttk.Button(linha3, text='Calcular', command=calcular_salario)
+        calcular.pack(padx= 5, pady= 5)
 
-def Entry_Valor():
-    valor = ttk.Entry(linha2, width=10, justify='center', textvariable=valor_var)
-    valor.pack(padx= 5, pady= 5)
-    return valor_var
+    def Label_Salario(self):
+        salario_label = ttk.Label(linha3, text='Seu Salario', textvariable=salario_var)
+        salario_label.pack(padx= 5, pady= 5)
 
-def Button_Calcular():
-    calcular_salario()
-
-# Defs
 def calcular_salario():
     horas = horas_var.get()
     minutos = minutos_var.get()
     valor = valor_var.get()
-    print(f'Horas: {horas}, Minutos: {minutos}, Valor: {valor}')
+    salario = ((horas * 60) + minutos) * (valor / 60)
+    salario_var.set(f'R$ {salario:.2f}')
 
-
-# ADD Widgets na Tela
 linha1 = ttk.Frame(window, padding=0)
 linha1.pack(padx=5, pady=5)
-Label_Horas()
-Entry_Horas()
-Label_Minutos()
-Entry_Minutos()
+Widgets().Entry_Horas()
+Widgets().Entry_Minutos()
 
 linha2 = ttk.Frame(window, padding=0)
 linha2.pack(padx=5, pady=5)
-Label_Valor()
-Entry_Valor()
+Widgets().Entry_Valor()
 
 linha3 = ttk.Frame(window, padding=0)
 linha3.pack(padx=5, pady=5)
-Button_Calcular()
+Widgets().Button_Calcular()
+Widgets().Label_Salario()
 
-# Run
 window.mainloop()
